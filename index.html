@@ -5,21 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍲</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f59e0b" />
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="manifest" href="./docs/manifest.json" />
     <title>GargotePOS - System de Gestion, Stock & Caisse Express</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-BVxZyjEl.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CoTtC2yT.css">
+    <script type="module" crossorigin src="./docs/assets/index-BVxZyjEl.js"></script>
+    <link rel="stylesheet" crossorigin href="./docs/assets/index-CoTtC2yT.css">
   </head>
   <body>
     <div id="root"></div>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
+          navigator.serviceWorker.register('./docs/sw.js')
             .then(reg => console.log('✅ Service Worker PWA enregistré:', reg.scope))
             .catch(err => console.log('❌ Erreur Service Worker PWA:', err));
         });
