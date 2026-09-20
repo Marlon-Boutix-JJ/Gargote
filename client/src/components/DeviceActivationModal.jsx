@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, Copy, Check, KeyRound, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { PwaInstallButton } from './PwaInstallButton';
 
 export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
   const { showToast } = useApp();
@@ -56,9 +57,9 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
 
   return (
     <div className="modal-overlay" style={{ background: '#0b0d14', backdropFilter: 'blur(20px)', zIndex: 99999 }}>
-      <div className="modal-content" style={{ maxWidth: '460px', padding: '2rem', border: '1px solid rgba(245, 158, 11, 0.4)', boxShadow: '0 25px 60px rgba(0,0,0,0.95)', textAlign: 'center' }}>
+      <div className="modal-content" style={{ maxWidth: '460px', padding: '2rem', border: '1px solid rgba(245, 158, 11, 0.4)', boxShadow: '0 25px 60px rgba(0,0,0,0.95)', textAlign: 'center', position: 'relative' }}>
         
-        <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--primary), var(--accent-orange))', borderRadius: '20px', display: 'flex', flexAlign: 'center', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#fff', boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4)' }}>
+        <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--primary), var(--accent-orange))', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#fff', boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4)' }}>
           <Lock size={32} />
         </div>
 
@@ -67,7 +68,7 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
           Envoyez ce **code à 6 chiffres** à l'administrateur pour recevoir votre code d'activation.
         </p>
 
-        {/* Affichage géant du Code Défi à 6 Chiffres */}
+        {/* Affichage du Code Défi à 6 Chiffres */}
         <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px dashed rgba(245, 158, 11, 0.5)', padding: '1.25rem', borderRadius: '16px', margin: '1.25rem 0' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
             VOTRE CODE DÉFI (6 CHIFFRES) :
@@ -88,7 +89,7 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
           </button>
         </div>
 
-        {/* Saisie de la Clé d'Activation à 6 Chiffres */}
+        {/* Formulaire de Saisie du Code d'Activation à 6 Chiffres */}
         <form onSubmit={handleActivate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="form-group">
             <label className="form-label" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
@@ -124,6 +125,9 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
           </button>
         </form>
       </div>
+
+      {/* Bouton Flottant d'Installation en Bas à Droite dès l'écran d'activation */}
+      <PwaInstallButton />
     </div>
   );
 };
