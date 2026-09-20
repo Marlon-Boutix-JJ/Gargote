@@ -161,20 +161,22 @@
   <script>
     const MASTER_SECRET = 'GARGOTE_POS_SECURE_MASTER_KEY_2026_6DIGIT';
 
-    // Implémentation fallback JS pure HMAC-SHA256 compatible tous navigateurs & file://
-    function simpleHmacSha256(key, message) {
-      if (window.CryptoJS) {
-        const hash = CryptoJS.HmacSHA256(message, key);
-        return hash.toString(CryptoJS.enc.Hex).toUpperCase();
-      }
-      // Algorithme léger natif fallback
-      let num = 0;
-      const combined = key + '_' + message;
+    function generateDeterministic6DigitKey(challengeCode) {
+      if (!challengeCode) return '000000';
+      const clean = String(challengeCode).trim().replace(/\D/g, '').padStart(6, '0');
+      const secret = MASTER_SECRET + '_ACTIVATION_SALT_6DIGIT';
+      const combined = secret + '_' + clean;
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
       for (let i = 0; i < combined.length; i++) {
-        num = (num << 5) - num + combined.charCodeAt(i);
-        num |= 0;
+        const ch = combined.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
       }
-      return Math.abs(num).toString(16).toUpperCase().padStart(8, '0');
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      const num = Math.abs(h1 ^ h2);
+      const codeInt = num % 1000000;
+      return String(codeInt).padStart(6, '0');
     }
 
     function generateKey() {
@@ -184,10 +186,7 @@
         return;
       }
 
-      const hexStr = simpleHmacSha256(MASTER_SECRET + '_ACTIVATION_SALT_6DIGIT', input);
-      const num = parseInt(hexStr.slice(0, 8), 16);
-      const codeInt = Math.abs(num) % 1000000;
-      const key = String(codeInt).padStart(6, '0');
+      const key = generateDeterministic6DigitKey(input);
 
       document.getElementById('resultKey').innerText = key;
       document.getElementById('resultBox').style.display = 'block';

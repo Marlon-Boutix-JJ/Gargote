@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Copy, Check, KeyRound, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PwaInstallButton } from './PwaInstallButton';
+import { verifyClientActivationKey } from '../utils/licenseUtils';
 
 export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
   const { showToast } = useApp();
@@ -28,6 +29,7 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
     setSubmitting(true);
     setErrorMsg(null);
 
+    // 1. Essai via le serveur backend s'il est actif
     try {
       const deviceId = localStorage.getItem('gargote_device_id');
       const res = await fetch('/api/device/activate', {
@@ -40,19 +42,33 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
         })
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        localStorage.setItem('gargote_activation_key', cleanKey);
-        showToast('Appareil activé avec succès !');
-        onActivated();
-      } else {
-        setErrorMsg(data.error || 'Code à 6 chiffres incorrect.');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('gargote_activation_key', cleanKey);
+          showToast('Appareil activé avec succès !');
+          onActivated();
+          setSubmitting(false);
+          return;
+        } else {
+          setErrorMsg(data.error || 'Code à 6 chiffres incorrect.');
+          setSubmitting(false);
+          return;
+        }
       }
     } catch (err) {
-      setErrorMsg('Erreur de connexion au serveur d\'activation.');
-    } finally {
-      setSubmitting(false);
+      // Mode hors-ligne ou hébergement statique GitHub Pages sans serveur backend
     }
+
+    // 2. Fallback d'activation locale autonome (Mode GitHub Pages / Offline)
+    if (verifyClientActivationKey(challengeCode, cleanKey)) {
+      localStorage.setItem('gargote_activation_key', cleanKey);
+      showToast('Appareil activé avec succès !');
+      onActivated();
+    } else {
+      setErrorMsg('Code d\'activation à 6 chiffres incorrect pour ce Code Défi.');
+    }
+    setSubmitting(false);
   };
 
   return (
