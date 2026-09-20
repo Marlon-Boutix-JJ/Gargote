@@ -10,6 +10,7 @@ import { StockManager } from './components/StockManager';
 import { ProductEditModal } from './components/ProductEditModal';
 import { SalesReportPage } from './components/SalesReportPage';
 import { DeviceActivationModal } from './components/DeviceActivationModal';
+import { PwaInstallButton } from './components/PwaInstallButton';
 
 const MainContent = () => {
   const { 
@@ -81,6 +82,9 @@ const MainContent = () => {
           <SalesReportPage />
         </main>
       )}
+
+      {/* Bouton d'Installation PWA Flottant en Bas à Droite */}
+      <PwaInstallButton />
 
       {/* Modales */}
       {activeModal === 'receipt' && <ReceiptModal />}
