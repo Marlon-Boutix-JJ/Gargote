@@ -128,7 +128,6 @@
       border: 1px solid rgba(16, 185, 129, 0.4);
     }
   </style>
-  <!-- Inclusion de CryptoJS pour un calcul HMAC 100% compatible file:// sans dépendance serveur -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
@@ -161,13 +160,11 @@
   <script>
     const MASTER_SECRET = 'GARGOTE_POS_SECURE_MASTER_KEY_2026_6DIGIT';
 
-    // Implémentation fallback JS pure HMAC-SHA256 compatible tous navigateurs & file://
     function simpleHmacSha256(key, message) {
       if (window.CryptoJS) {
         const hash = CryptoJS.HmacSHA256(message, key);
         return hash.toString(CryptoJS.enc.Hex).toUpperCase();
       }
-      // Algorithme léger natif fallback
       let num = 0;
       const combined = key + '_' + message;
       for (let i = 0; i < combined.length; i++) {
