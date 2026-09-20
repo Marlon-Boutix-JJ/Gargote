@@ -1,0 +1,10 @@
+{
+  "name": "gargote-app-root",
+  "version": "1.0.0",
+  "description": "Application GargotePOS - Déploiement GitHub Pages & API Server",
+  "scripts": {
+    "build:pages": "npm --prefix client run build",
+    "start:server": "npm --prefix server start",
+    "start:client": "npm --prefix client dev"
+  }
+}
