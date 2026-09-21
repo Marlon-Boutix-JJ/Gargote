@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Copy, Check, KeyRound, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PwaInstallButton } from './PwaInstallButton';
-import { verifyClientActivationKey } from '../utils/licenseUtils';
+import { verifyClientActivationKey, isStaticHost } from '../utils/licenseUtils';
 
 export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
   const { showToast } = useApp();
@@ -29,35 +29,37 @@ export const DeviceActivationModal = ({ challengeCode, onActivated }) => {
     setSubmitting(true);
     setErrorMsg(null);
 
-    // 1. Essai via le serveur backend s'il est actif
-    try {
-      const deviceId = localStorage.getItem('gargote_device_id');
-      const res = await fetch('/api/device/activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          deviceId,
-          challengeCode,
-          activationKey: cleanKey
-        })
-      });
+    // 1. Essai via le serveur backend s'il est actif (non-statique)
+    if (!isStaticHost()) {
+      try {
+        const deviceId = localStorage.getItem('gargote_device_id');
+        const res = await fetch('/api/device/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId,
+            challengeCode,
+            activationKey: cleanKey
+          })
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          localStorage.setItem('gargote_activation_key', cleanKey);
-          showToast('Appareil activé avec succès !');
-          onActivated();
-          setSubmitting(false);
-          return;
-        } else {
-          setErrorMsg(data.error || 'Code à 6 chiffres incorrect.');
-          setSubmitting(false);
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            localStorage.setItem('gargote_activation_key', cleanKey);
+            showToast('Appareil activé avec succès !');
+            onActivated();
+            setSubmitting(false);
+            return;
+          } else {
+            setErrorMsg(data.error || 'Code à 6 chiffres incorrect.');
+            setSubmitting(false);
+            return;
+          }
         }
+      } catch (err) {
+        // Mode hors-ligne ou hébergement statique GitHub Pages sans serveur backend
       }
-    } catch (err) {
-      // Mode hors-ligne ou hébergement statique GitHub Pages sans serveur backend
     }
 
     // 2. Fallback d'activation locale autonome (Mode GitHub Pages / Offline)

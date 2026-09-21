@@ -2,6 +2,13 @@
 
 const MASTER_SECRET = 'GARGOTE_POS_SECURE_MASTER_KEY_2026_6DIGIT_ACTIVATION_SALT_6DIGIT';
 
+export const isStaticHost = () => {
+  if (typeof window === 'undefined') return true;
+  const host = window.location.hostname;
+  const proto = window.location.protocol;
+  return host.includes('github.io') || proto === 'file:';
+};
+
 export const generate6DigitActivationKey = (challengeCode) => {
   if (!challengeCode) return '000000';
   const clean = String(challengeCode).trim().replace(/\D/g, '').padStart(6, '0');

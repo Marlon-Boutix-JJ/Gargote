@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getDeviceId, getDeviceFingerprint } from '../utils/deviceFingerprint';
+import { isStaticHost } from '../utils/licenseUtils';
 
 const AppContext = createContext();
 
@@ -165,24 +166,26 @@ export const AppProvider = ({ children }) => {
 
   // 1. Vérifier la licence et l'activation de l'appareil
   const checkDeviceLicense = async () => {
-    try {
-      const deviceId = getDeviceId();
-      const fingerprint = getDeviceFingerprint();
+    if (!isStaticHost()) {
+      try {
+        const deviceId = getDeviceId();
+        const fingerprint = getDeviceFingerprint();
 
-      const res = await fetch('/api/device/check-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, fingerprint })
-      });
+        const res = await fetch('/api/device/check-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId, fingerprint })
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        setDeviceChallengeCode(data.challengeCode || '');
-        setIsDeviceActivated(data.isActivated);
-        return;
+        if (res.ok) {
+          const data = await res.json();
+          setDeviceChallengeCode(data.challengeCode || '');
+          setIsDeviceActivated(data.isActivated);
+          return;
+        }
+      } catch (err) {
+        // Fallback local storage pour hébergement statique autonome (GitHub Pages)
       }
-    } catch (err) {
-      // Fallback local storage pour hébergement statique autonome (GitHub Pages)
     }
 
     // Algorithme local à 6 chiffres pour le mode hors-serveur
@@ -204,16 +207,18 @@ export const AppProvider = ({ children }) => {
 
   // Charger les produits
   const fetchProducts = async () => {
-    try {
-      const res = await fetch('/api/products');
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
-        setLocalData('products', data);
-        return;
+    if (!isStaticHost()) {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data);
+          setLocalData('products', data);
+          return;
+        }
+      } catch (err) {
+        // Fallback autonome
       }
-    } catch (err) {
-      // Fallback autonome
     }
     const localProds = getLocalData('products', DEFAULT_PRODUCTS);
     setProducts(localProds);
@@ -221,20 +226,22 @@ export const AppProvider = ({ children }) => {
 
   // Charger les tables
   const fetchTables = async () => {
-    try {
-      const res = await fetch('/api/tables');
-      if (res.ok) {
-        const data = await res.json();
-        setTables(data);
-        setLocalData('tables', data);
-        if (selectedTable) {
-          const updated = data.find(t => String(t._id) === String(selectedTable._id));
-          if (updated) setSelectedTable(updated);
+    if (!isStaticHost()) {
+      try {
+        const res = await fetch('/api/tables');
+        if (res.ok) {
+          const data = await res.json();
+          setTables(data);
+          setLocalData('tables', data);
+          if (selectedTable) {
+            const updated = data.find(t => String(t._id) === String(selectedTable._id));
+            if (updated) setSelectedTable(updated);
+          }
+          return;
         }
-        return;
+      } catch (err) {
+        // Fallback autonome
       }
-    } catch (err) {
-      // Fallback autonome
     }
     const localTables = getLocalData('tables', DEFAULT_TABLES);
     setTables(localTables);
@@ -247,21 +254,23 @@ export const AppProvider = ({ children }) => {
   // Charger l'historique des ventes & bénéfices
   const fetchSalesHistory = async (overrideFilters = null) => {
     const f = overrideFilters || salesFilters;
-    try {
-      let url = '/api/orders/history?';
-      const params = new URLSearchParams();
-      if (f.startDate) params.append('startDate', f.startDate);
-      if (f.endDate) params.append('endDate', f.endDate);
-      if (f.search) params.append('search', f.search);
+    if (!isStaticHost()) {
+      try {
+        let url = '/api/orders/history?';
+        const params = new URLSearchParams();
+        if (f.startDate) params.append('startDate', f.startDate);
+        if (f.endDate) params.append('endDate', f.endDate);
+        if (f.search) params.append('search', f.search);
 
-      const res = await fetch(url + params.toString());
-      if (res.ok) {
-        const data = await res.json();
-        setSalesReportData(data);
-        return;
+        const res = await fetch(url + params.toString());
+        if (res.ok) {
+          const data = await res.json();
+          setSalesReportData(data);
+          return;
+        }
+      } catch (err) {
+        // Fallback autonome
       }
-    } catch (err) {
-      // Fallback autonome
     }
 
     // Filtrage autonome local
@@ -308,15 +317,17 @@ export const AppProvider = ({ children }) => {
   // Charger la commande active d'une table
   const fetchActiveOrder = async (tableId) => {
     if (!tableId) return;
-    try {
-      const res = await fetch(`/api/orders/active/${tableId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setActiveOrder(data);
-        return;
+    if (!isStaticHost()) {
+      try {
+        const res = await fetch(`/api/orders/active/${tableId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setActiveOrder(data);
+          return;
+        }
+      } catch (err) {
+        // Fallback autonome
       }
-    } catch (err) {
-      // Fallback autonome
     }
     const localActiveOrders = getLocalData('active_orders', {});
     setActiveOrder(localActiveOrders[tableId] || null);
